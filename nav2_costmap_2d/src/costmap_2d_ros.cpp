@@ -211,9 +211,13 @@ Costmap2DROS::on_configure(const rclcpp_lifecycle::State & /*state*/)
   }
 
   // Create the publishers and subscribers
+  bool footprint_latched = nav2_util::declare_or_get_parameter(this, "footprint_sub_latched",
+      false);
+  auto footprint_sub_qos =
+    footprint_latched ? rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable() :
+    rclcpp::SystemDefaultsQoS();
   footprint_sub_ = create_subscription<geometry_msgs::msg::Polygon>(
-    "footprint",
-    rclcpp::SystemDefaultsQoS(),
+    "footprint", footprint_sub_qos,
     std::bind(&Costmap2DROS::setRobotFootprintPolygon, this, std::placeholders::_1));
 
   footprint_pub_ = create_publisher<geometry_msgs::msg::PolygonStamped>(
